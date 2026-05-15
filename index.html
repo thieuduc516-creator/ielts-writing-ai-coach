@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IELTS Writing AI Coach</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #f8fafc, #eef2ff, #ecfeff);
+      color: #0f172a;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 28px; }
+    .hero {
+      background: white;
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(15,23,42,0.08);
+      margin-bottom: 22px;
+    }
+    .badge {
+      display: inline-block;
+      background: #eef2ff;
+      color: #4338ca;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+    h1 { margin: 0; font-size: 38px; line-height: 1.15; }
+    h2 { margin: 0 0 14px 0; font-size: 22px; }
+    h3 { margin: 0 0 10px 0; }
+    p { line-height: 1.65; }
+    .grid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 22px; }
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 12px 35px rgba(15,23,42,0.07);
+      margin-bottom: 22px;
+    }
+    .task-header {
+      background: #020617;
+      color: white;
+      border-radius: 24px;
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #334155;
+      margin: 3px;
+    }
+    .pill-dark { background: rgba(255,255,255,0.14); color: white; }
+    .question-btn {
+      width: 100%;
+      border: 1px solid #e2e8f0;
+      background: white;
+      border-radius: 20px;
+      padding: 16px;
+      text-align: left;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: 0.2s;
+    }
+    .question-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(15,23,42,0.08); }
+    .question-btn.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+    .question-btn.active .pill { background: rgba(255,255,255,0.18); color: white; }
+    textarea, select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 18px;
+      padding: 14px;
+      font-size: 15px;
+      outline: none;
+      background: white;
+    }
+    textarea { min-height: 250px; line-height: 1.6; resize: vertical; }
+    label { font-weight: 700; font-size: 14px; }
+    .button {
+      background: #020617;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 20px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 14px;
+    }
+    .button.green { background: #059669; }
+    .button.blue { background: #4f46e5; }
+    .button:disabled { background: #cbd5e1; cursor: not-allowed; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .box {
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 16px;
+      margin-top: 10px;
+    }
+    .score-panel {
+      background: linear-gradient(135deg, #020617, #312e81);
+      color: white;
+      border-radius: 24px;
+      padding: 24px;
+    }
+    .score { font-size: 58px; font-weight: 900; }
+    .criterion {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+    .sentence-row {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 15px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      background: white;
+    }
+    .sentence-row.active { border-color: #38bdf8; background: #f0f9ff; }
+    .sentence-guide {
+      background: #020617;
+      color: white;
+      border-radius: 22px;
+      padding: 20px;
+    }
+    .guide-box {
+      background: rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .guide-box.green { background: rgba(16,185,129,0.22); }
+    .guide-box.white { background: white; color: #0f172a; }
+    .vocab-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .vocab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .vocab-grid div { border-radius: 14px; padding: 12px; background: #f8fafc; }
+    .report {
+      background: #020617;
+      color: white;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+      min-height: 260px;
+    }
+    @media (max-width: 900px) {
+      .grid, .two-col, .vocab-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <div class="badge">IELTS Writing AI Coach</div>
+      <h1>Đề trực tiếp, sửa từng câu, học từ theo band, xuất feedback</h1>
+      <p>Bản web đơn giản chỉ dùng một file HTML. Có thể upload trực tiếp lên GitHub Pages để mọi người truy cập bằng link.</p>
+    </section>
+
+    <main class="grid">
+      <section>
+        <div class="card">
+          <h2>Question Bank</h2>
+          <div id="questionList"></div>
+        </div>
+
+        <div class="card">
+          <div class="task-header">
+            <div class="badge" style="background:rgba(255,255,255,0.14); color:white;">Direct IELTS Task</div>
+            <h2 id="taskTitle"></h2>
+            <p id="taskPrompt"></p>
+            <span class="pill pill-dark" id="taskTime"></span>
+            <span class="pill pill-dark" id="taskWords"></span>
+          </div>
+
+          <div class="two-col">
+            <div class="box">
+              <h3>Requirements</h3>
+              <div id="requirements"></div>
+            </div>
+            <div class="box">
+              <h3>Suggested plan</h3>
+              <div id="plan"></div>
+            </div>
+          </div>
+          <button class="button blue" onclick="startTask()">Start this task</button>
+        </div>
+
+        <div class="card">
+          <h2>Essay Editor</h2>
+          <label>Target band</label>
+          <select id="targetBand">
+            <option>5.5</option>
+            <option>6.0</option>
+            <option>6.5</option>
+            <option selected>7.0</option>
+            <option>7.5</option>
+            <option>8.0</option>
+          </select>
+          <p><b>Word count:</b> <span id="wordCount">0</span></p>
+          <textarea id="essay" oninput="updateWordCount()">Many people thinks online learning is more better than traditional class. Government should spend money for education. This can help students learn good.</textarea>
+          <button class="button" onclick="evaluateEssay()">Evaluate & Correct</button>
+        </div>
+      </section>
+
+      <section>
+        <div class="score-panel">
+          <p>AI Feedback</p>
+          <h2>Estimated Band</h2>
+          <div class="score" id="overallScore">--</div>
+          <p>Band gap: <span id="bandGap">--</span></p>
+        </div>
+
+        <div class="card">
+          <h2>Criteria</h2>
+          <div id="criteria"></div>
+        </div>
+
+        <div class="card">
+          <h2>Sentence-by-sentence Checker</h2>
+          <div class="two-col">
+            <div id="sentenceList"></div>
+            <div id="sentenceGuide" class="sentence-guide">
+              <h3>Sentence Guide</h3>
+              <p>Feedback theo từng câu sẽ hiện ở đây sau khi bấm Evaluate.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Band Vocabulary</h2>
+          <div id="vocabList"></div>
+        </div>
+
+        <div class="card">
+          <h2>Export Feedback</h2>
+          <button class="button green" onclick="showReport()">Show Report</button>
+          <textarea id="report" class="report" readonly placeholder="Report will appear here."></textarea>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        id: "q1",
+        task: "Writing Task 2",
+        type: "Opinion Essay",
+        topic: "Education",
+        level: "Band 5.5–7.0",
+        time: "40 minutes",
+        words: "250+ words",
+        prompt: "Some people believe that online learning will eventually replace traditional classroom education. To what extent do you agree or disagree?",
+        requirements: [
+          "State your opinion clearly.",
+          "Develop at least two main ideas.",
+          "Use examples and avoid memorised phrases."
+        ],
+        plan: [
+          "Introduction: paraphrase + opinion",
+          "Body 1: benefits of online learning",
+          "Body 2: why classrooms still matter",
+          "Conclusion: restate your position"
+        ]
+      },
+      {
+        id: "q2",
+        task: "Writing Task 2",
+        type: "Discussion Essay",
+        topic: "Technology",
+        level: "Band 6.0–7.5",
+        time: "40 minutes",
+        words: "250+ words",
+        prompt: "Some people think artificial intelligence will improve education, while others believe it may reduce students' ability to think independently. Discuss both views and give your opinion.",
+        requirements: [
+          "Discuss both views.",
+          "Give your own opinion.",
+          "Explain both benefits and risks of AI."
+        ],
+        plan: [
+          "Introduction: paraphrase both views",
+          "Body 1: AI supports personalised learning",
+          "Body 2: AI may cause overdependence",
+          "Conclusion: balanced opinion"
+        ]
+      }
+    ];
+
+    const vocabByTopic = {
+      Education: [
+        ["học online", "online learning", "distance learning", "remote learning", "digitally mediated learning"],
+        ["lớp học truyền thống", "traditional class", "traditional classroom", "classroom-based education", "face-to-face instruction"],
+        ["học tốt hơn", "learn better", "improve learning outcomes", "enhance academic performance", "facilitate measurable educational gains"]
+      ],
+      Technology: [
+        ["AI trong giáo dục", "AI in education", "educational AI", "AI-assisted learning", "algorithmically supported instruction"],
+        ["tư duy độc lập", "independent thinking", "critical thinking", "intellectual autonomy", "independent analytical judgement"]
+      ]
+    };
+
+    let currentQuestion = questions[0];
+    let currentFeedback = null;
+    let activeSentence = 0;
+
+    function renderQuestions() {
+      const list = document.getElementById("questionList");
+      list.innerHTML = "";
+      questions.forEach(q => {
+        const btn = document.createElement("button");
+        btn.className = "question-btn" + (q.id === currentQuestion.id ? " active" : "");
+        btn.innerHTML = `
+          <div>
+            <span class="pill">${q.task}</span>
+            <span class="pill">${q.type}</span>
+            <span class="pill">${q.level}</span>
+          </div>
+          <p>${q.prompt}</p>
+        `;
+        btn.onclick = () => {
+          currentQuestion = q;
+          renderAll();
+        };
+        list.appendChild(btn);
+      });
+    }
+
+    function renderTask() {
+      document.getElementById("taskTitle").innerText = currentQuestion.type;
+      document.getElementById("taskPrompt").innerText = currentQuestion.prompt;
+      document.getElementById("taskTime").innerText = currentQuestion.time;
+      document.getElementById("taskWords").innerText = currentQuestion.words;
+      document.getElementById("requirements").innerHTML = currentQuestion.requirements.map(x => `<p>• ${x}</p>`).join("");
+      document.getElementById("plan").innerHTML = currentQuestion.plan.map(x => `<p>• ${x}</p>`).join("");
+    }
+
+    function renderVocab() {
+      const vocab = vocabByTopic[currentQuestion.topic] || [];
+      document.getElementById("vocabList").innerHTML = vocab.map(row => `
+        <div class="vocab-card">
+          <b>${row[0]}</b>
+          <div class="vocab-grid">
+            <div><b>Band 5:</b> ${row[1]}</div>
+            <div><b>Band 6:</b> ${row[2]}</div>
+            <div><b>Band 7:</b> ${row[3]}</div>
+            <div><b>Band 8+:</b> ${row[4]}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function startTask() {
+      document.getElementById("essay").value = "";
+      currentFeedback = null;
+      activeSentence = 0;
+      document.getElementById("overallScore").innerText = "--";
+      document.getElementById("bandGap").innerText = "--";
+      document.getElementById("criteria").innerHTML = "";
+      document.getElementById("sentenceList").innerHTML = "";
+      document.getElementById("sentenceGuide").innerHTML = "<h3>Sentence Guide</h3><p>Feedback theo từng câu sẽ hiện ở đây sau khi bấm Evaluate.</p>";
+      document.getElementById("report").value = "";
+      updateWordCount();
+    }
+
+    function updateWordCount() {
+      const text = document.getElementById("essay").value.trim();
+      document.getElementById("wordCount").innerText = text ? text.split(/\s+/).length : 0;
+    }
+
+    function splitSentences(text) {
+      const clean = text.replace(/\s+/g, " ").trim();
+      if (!clean) return [];
+      return clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [];
+    }
+
+    function reviewSentence(sentence, index) {
+      const lower = sentence.toLowerCase();
+      if (lower.includes("thinks") || lower.includes("more better")) {
+        return {
+          no: index + 1,
+          status: "Needs correction",
+          type: "Grammar",
+          original: sentence,
+          problem: "Subject–verb agreement and double comparative error.",
+          corrected: "Many people think online learning is better than traditional classes.",
+          why: "People is plural, so use think. More better is incorrect because better is already comparative.",
+          upgrade: "Many learners regard online education as a more flexible alternative to classroom-based instruction.",
+          focus: "a more flexible alternative to"
+        };
+      }
+      if (lower.includes("spend money for")) {
+        return {
+          no: index + 1,
+          status: "Needs correction",
+          type: "Collocation",
+          original: sentence,
+          problem: "Spend money for is unnatural in this context.",
+          corrected: "Governments should spend money on education.",
+          why: "The natural collocation is spend money on. A more academic phrase is allocate public funding to.",
+          upgrade: "Governments should allocate more public funding to education and digital learning infrastructure.",
+          focus: "allocate public funding to"
+        };
+      }
+      if (lower.includes("learn good")) {
+        return {
+          no: index + 1,
+          status: "Needs correction",
+          type: "Word form",
+          original: sentence,
+          problem: "Good is an adjective, but this position needs an adverb.",
+          corrected: "This can help students learn effectively.",
+          why: "Use effectively after the verb learn. For IELTS, express the learning result more precisely.",
+          upgrade: "Well-designed online platforms can enhance students' academic performance when combined with teacher guidance.",
+          focus: "enhance academic performance"
+        };
+      }
+      return {
+        no: index + 1,
+        status: "Acceptable",
+        type: "Minor improvement",
+        original: sentence,
+        problem: "No major error detected in this demo checker.",
+        corrected: sentence,
+        why: "The sentence is understandable. In the full AI version, it will be checked for grammar, vocabulary, cohesion, and task response.",
+        upgrade: sentence,
+        focus: "academic precision"
+      };
+    }
+
+    function evaluateEssay() {
+      const text = document.getElementById("essay").value;
+      const targetBand = Number(document.getElementById("targetBand").value);
+      const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const hasPosition = /agree|disagree|believe|opinion|argue|extent/i.test(text);
+      const hasLinker = /however|therefore|moreover|although|for example|as a result/i.test(text);
+      const hasComplex = /because|although|while|whereas|which|that/i.test(text);
+
+      let band = 5;
+      if (wordCount > 120) band += 0.5;
+      if (wordCount > 220) band += 0.5;
+      if (hasPosition) band += 0.5;
+      if (hasLinker) band += 0.5;
+      if (hasComplex) band += 0.5;
+      band = Math.min(targetBand, Math.min(8, band));
+
+      const sentences = splitSentences(text);
+      const reviews = sentences.length ? sentences.map(reviewSentence) : [];
+
+      currentFeedback = {
+        overall: band.toFixed(1),
+        gap: Math.max(0, targetBand - band).toFixed(1),
+        reviews,
+        criteria: [
+          ["Task Response", hasPosition ? band : band - 0.5, "Make the position clearer and develop ideas more fully."],
+          ["Coherence & Cohesion", hasLinker ? band : band - 0.5, "Use clearer logical links between sentences."],
+          ["Lexical Resource", band - 0.2, "Use more precise topic-specific vocabulary."],
+          ["Grammar Range & Accuracy", hasComplex ? band : band - 0.5, "Use controlled complex sentences with fewer errors."]
+        ],
+        modelAnswer: "Although online learning can expand educational access and flexibility, it is unlikely to fully replace classroom-based education because face-to-face instruction still plays an important role in motivation, interaction, and academic discipline."
+      };
+
+      activeSentence = 0;
+      renderFeedback();
+    }
+
+    function renderFeedback() {
+      if (!currentFeedback) return;
+      document.getElementById("overallScore").innerText = currentFeedback.overall;
+      document.getElementById("bandGap").innerText = currentFeedback.gap;
+
+      document.getElementById("criteria").innerHTML = currentFeedback.criteria.map(c => `
+        <div class="criterion">
+          <h3>${c[0]} <span class="pill">${Number(c[1]).toFixed(1)}</span></h3>
+          <p>${c[2]}</p>
+        </div>
+      `).join("");
+
+      document.getElementById("sentenceList").innerHTML = currentFeedback.reviews.map((r, i) => `
+        <div class="sentence-row ${i === activeSentence ? "active" : ""}" onclick="selectSentence(${i})">
+          <b>Sentence ${r.no}</b>
+          <p>${r.original}</p>
+          <span class="pill">${r.type}</span>
+          <span class="pill">${r.status}</span>
+        </div>
+      `).join("");
+
+      renderSentenceGuide();
+    }
+
+    function selectSentence(index) {
+      activeSentence = index;
+      renderFeedback();
+    }
+
+    function renderSentenceGuide() {
+      const r = currentFeedback.reviews[activeSentence];
+      if (!r) {
+        document.getElementById("sentenceGuide").innerHTML = "<h3>Sentence Guide</h3><p>No sentence selected.</p>";
+        return;
+      }
+      document.getElementById("sentenceGuide").innerHTML = `
+        <h3>Sentence Guide</h3>
+        <div class="guide-box"><b>Problem</b><p>${r.problem}</p></div>
+        <div class="guide-box green"><b>Corrected</b><p>${r.corrected}</p></div>
+        <div class="guide-box"><b>Why</b><p>${r.why}</p></div>
+        <div class="guide-box white"><b>Band upgrade</b><p>${r.upgrade}</p><p><b>Focus phrase:</b> ${r.focus}</p></div>
+      `;
+    }
+
+    function showReport() {
+      if (!currentFeedback) return;
+      const criteria = currentFeedback.criteria.map(c => `- ${c[0]}: ${Number(c[1]).toFixed(1)} | ${c[2]}`).join("\n");
+      const sentences = currentFeedback.reviews.map(r =>
+        `${r.no}. ${r.original}\n   Issue: ${r.type}\n   Corrected: ${r.corrected}\n   Upgrade: ${r.upgrade}`
+      ).join("\n\n");
+
+      document.getElementById("report").value =
+`IELTS Writing AI Feedback Report
+
+Question:
+${currentQuestion.prompt}
+
+Estimated Band: ${currentFeedback.overall}
+Band Gap: ${currentFeedback.gap}
+
+Criteria:
+${criteria}
+
+Sentence Review:
+${sentences}
+
+Model Upgrade:
+${currentFeedback.modelAnswer}`;
+    }
+
+    function renderAll() {
+      renderQuestions();
+      renderTask();
+      renderVocab();
+    }
+
+    renderAll();
+    updateWordCount();
+  </script>
+</body>
+</html>
